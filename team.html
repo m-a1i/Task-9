@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Elegance Salon | Staff Details</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <h1 style="text-align:center;">Our Experts</h1>
+    <div class="team-grid" id="teamContainer"></div>
+
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal-content">
+            <span class="close-modal" id="closeBtn">&times;</span>
+            <img src="" id="mImg" class="modal-img">
+            <h2 id="mName"></h2>
+            <p id="mRole" style="color:#c5a059; font-weight:bold;"></p>
+            <hr>
+            <p id="mBio" style="margin: 15px 0; color:#444;"></p>
+            <div id="mSkills"></div>
+            <div id="mSocials" style="margin-top:20px;">
+                <a href="#" id="mLink" class="btn" style="padding: 8px 16px;">LinkedIn Profile</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let teamData = [];
+
+        async function init() {
+            const res = await fetch('team.json');
+            teamData = await res.json();
+            renderTeam();
+        }
+
+        function renderTeam() {
+            const container = document.getElementById('teamContainer');
+            container.innerHTML = teamData.map(member => `
+                <div class="card" onclick="openModal(${member.id})">
+                    <img src="${member.image_url}" style="width:80px; border-radius:50%;">
+                    <h3>${member.name}</h3>
+                    <p>${member.role}</p>
+                    <button class="btn" style="margin-top:10px;">View Profile</button>
+                </div>
+            `).join('');
+        }
+
+        function openModal(id) {
+            const member = teamData.find(m => m.id === id);
+            if (!member) return;
+
+            document.getElementById('mName').innerText = member.name;
+            document.getElementById('mRole').innerText = member.role;
+            document.getElementById('mBio').innerText = member.bio;
+            document.getElementById('mImg').src = member.image_url;
+            
+            // Skills logic
+            const skills = member.expertise.split(',');
+            document.getElementById('mSkills').innerHTML = skills.map(s => 
+                `<span class="skill-tag">${s.trim()}</span>`
+            ).join('');
+
+            document.getElementById('modalOverlay').classList.add('active');
+            document.body.style.overflow = 'hidden'; // Scroll lock
+        }
+
+        function closeModal() {
+            document.getElementById('modalOverlay').classList.remove('active');
+            document.body.style.overflow = 'auto'; // Unlock scroll
+        }
+
+        // Event Listeners
+        document.getElementById('closeBtn').onclick = closeModal;
+        window.onclick = (e) => { if(e.target == document.getElementById('modalOverlay')) closeModal(); };
+        window.onkeydown = (e) => { if(e.key === "Escape") closeModal(); };
+
+        init();
+    </script>
+</body>
+</html>
